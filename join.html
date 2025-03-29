@@ -156,6 +156,7 @@
             document.getElementById("roleContainer").style.display = "block";
             document.getElementById("playerRole").innerText = player.role;
             document.getElementById("roleImage").src = getRoleImage(player.role);
+            document.getElementById("joinContainer").style.display = "none";
 
             const waitingMsg = document.getElementById("waitingMessage");
             if (waitingMsg) waitingMsg.remove();

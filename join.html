@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>انضمام للجلسة</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set, get, child, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBP2GPMVxCl2t3n3SFYqWDn585rftcBvGY",
+      authDomain: "mifianew.firebaseapp.com",
+      databaseURL: "https://mifianew-default-rtdb.firebaseio.com",
+      projectId: "mifianew",
+      storageBucket: "mifianew.firebasestorage.app",
+      messagingSenderId: "90140522196",
+      appId: "1:90140522196:web:64613821aa48b8db866d41",
+      measurementId: "G-B2XWYD9T7M"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session');
+    let playerName = "";
+
+    function getRoleImage(role) {
+      switch(role) {
+        case "مواطن": return "https://i.imgur.com/zCdfQUT.png";
+        case "شايب": return "https://i.imgur.com/FZ3UQKr.png";
+        case "مافيا": return "https://i.imgur.com/oBT4vBB.png";
+        case "دكتور": return "https://i.imgur.com/VMywFtY.png";
+        default: return "https://i.imgur.com/zCdfQUT.png";
+      }
+    }
+
+    window.joinSession = async function () {
+      const name = document.getElementById("playerName").value.trim();
+      if (!name) {
+        alert("من فضلك أدخل اسمك.");
+        return;
+      }
+
+      const sessionRef = ref(db, `sessions/${sessionId}`);
+      const snapshot = await get(sessionRef);
+      if (!snapshot.exists()) {
+        document.getElementById("status").innerText = "الجلسة غير موجودة.";
+        return;
+      }
+
+      const data = snapshot.val();
+      const playersList = data.playersList || [];
+
+      if (playersList.some(p => p.name === name)) {
+        alert("هذا الاسم مستخدم بالفعل. اختر اسمًا آخر.");
+        return;
+      }
+
+      playersList.push({ name });
+      await update(sessionRef, { playersList });
+
+      playerName = name;
+      waitForGameStart();
+      document.getElementById("joinContainer").innerHTML = `<h2>تم الانضمام بنجاح! انتظر بدء اللعبة...</h2>`;
+    }
+
+    function waitForGameStart() {
+      const sessionRef = ref(db, `sessions/${sessionId}`);
+      onValue(sessionRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data.started && data.assignedRoles) {
+          const player = data.assignedRoles.find(p => p.name === playerName);
+          if (player) {
+            document.getElementById("roleContainer").style.display = "block";
+            document.getElementById("playerRole").innerText = player.role;
+            document.getElementById("roleImage").src = getRoleImage(player.role);
+          }
+        }
+      });
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+    body {
+      font-family: 'Tajawal', sans-serif;
+      direction: rtl;
+      margin: 0;
+      padding: 0;
+      background: url('https://images.unsplash.com/photo-1603461590920-8e2a1751e7d4?auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+      background-size: cover;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.75);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+    }
+    input {
+      background: #fff;
+      color: #000;
+    }
+    button {
+      background-color: #ffc107;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #e0a800;
+    }
+    .role-card {
+      background: #111;
+      border: 2px solid #ffc107;
+      border-radius: 15px;
+      padding: 15px;
+      color: white;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(255,193,7,0.5);
+      margin-top: 20px;
+    }
+    .role-card img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="joinContainer">
+    <h1>ادخل اسمك للانضمام</h1>
+    <input type="text" id="playerName" placeholder="اسم اللاعب">
+    <button onclick="joinSession()">انضمام</button>
+    <div id="status"></div>
+  </div>
+
+  <div class="container" id="roleContainer" style="display: none;">
+    <h2>دورك في اللعبة:</h2>
+    <div class="role-card">
+      <img id="roleImage" src="" alt="الدور">
+      <p id="playerRole" style="font-size: 24px; font-weight: bold;"></p>
+    </div>
+  </div>
+</body>
+</html>

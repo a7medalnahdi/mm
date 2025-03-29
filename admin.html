@@ -53,7 +53,41 @@
       padding: 10px;
       border-radius: 10px;
     }
-  </style>
+  
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+    font-size: 15px;
+  }
+  .container {
+    padding: 20px !important;
+    border-radius: 15px !important;
+    width: 95% !important;
+  }
+  .logo img {
+    height: 60px !important;
+  }
+  h1, h2, h3 {
+    font-size: 20px !important;
+  }
+  input, button {
+    font-size: 15px !important;
+    padding: 10px !important;
+  }
+  .role-card img {
+    width: 80px !important;
+    height: 80px !important;
+  }
+  .role-input {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .role-input input {
+    width: 100% !important;
+  }
+}
+
+</style>
 </head>
 <body>
   <div class="logo"><img src="https://i.imgur.com/dMAFz65.png" alt="شعار اللعبة" style="height: 80px; margin-bottom: 20px;"></div>

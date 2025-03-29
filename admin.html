@@ -62,5 +62,75 @@
     <button onclick="startGame()">🚀 بدء اللعبة</button>
     <div id="rolesReveal" style="margin-top: 20px;"></div>
   </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, onValue, get, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBP2GPMVxCl2t3n3SFYqWDn585rftcBvGY",
+      authDomain: "mifianew.firebaseapp.com",
+      databaseURL: "https://mifianew-default-rtdb.firebaseio.com",
+      projectId: "mifianew",
+      storageBucket: "mifianew.firebasestorage.app",
+      messagingSenderId: "90140522196",
+      appId: "1:90140522196:web:64613821aa48b8db866d41",
+      measurementId: "G-B2XWYD9T7M"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const sessionId = new URLSearchParams(window.location.search).get("session");
+    const sessionRef = ref(db, `sessions/${sessionId}`);
+
+    const playersListElement = document.getElementById("playersList");
+    const rolesReveal = document.getElementById("rolesReveal");
+
+    // تحديث قائمة اللاعبين تلقائيًا
+    onValue(sessionRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data || !data.playersList) return;
+
+      playersListElement.innerHTML = "";
+      data.playersList.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = p.name;
+        playersListElement.appendChild(li);
+      });
+    });
+
+    // بدء اللعبة وتوزيع الأدوار
+    window.startGame = async function () {
+      const snapshot = await get(sessionRef);
+      const data = snapshot.val();
+      if (!data || !data.playersList) return;
+
+      const rolesArray = [];
+      for (let i = 0; i < data.roles.citizen; i++) rolesArray.push("مواطن");
+      for (let i = 0; i < data.roles.oldman; i++) rolesArray.push("شايب");
+      for (let i = 0; i < data.roles.mafia; i++) rolesArray.push("مافيا");
+      for (let i = 0; i < data.roles.doctor; i++) rolesArray.push("دكتور");
+
+      // خلط الأدوار
+      for (let i = rolesArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [rolesArray[i], rolesArray[j]] = [rolesArray[j], rolesArray[i]];
+      }
+
+      const assignedRoles = data.playersList.map((p, index) => ({
+        name: p.name,
+        role: rolesArray[index] || "مواطن"
+      }));
+
+      await update(sessionRef, {
+        started: true,
+        assignedRoles
+      });
+
+      rolesReveal.innerHTML = `<h3>كشف الأدوار:</h3>` +
+        assignedRoles.map(p => `<p><strong>${p.name}</strong>: ${p.role}</p>`).join("");
+    };
+  </script>
 </body>
 </html>

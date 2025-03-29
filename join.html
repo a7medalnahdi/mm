@@ -66,7 +66,45 @@
       object-fit: contain;
       margin-bottom: 10px;
     }
-  </style>
+  
+<style>
+  .role-card {
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(255,193,7,0.5);
+    margin-top: 20px;
+    color: white;
+    text-align: center;
+  }
+  .role-mafia {
+    background-color: #2b0000;
+    border: 2px solid red;
+    box-shadow: 0 0 20px red;
+  }
+  .role-citizen {
+    background-color: #003300;
+    border: 2px solid #00ff00;
+    box-shadow: 0 0 20px #00ff00;
+  }
+  .role-doctor {
+    background-color: #002b4f;
+    border: 2px solid #00bfff;
+    box-shadow: 0 0 20px #00bfff;
+  }
+  .role-oldman {
+    background-color: #3c3c3c;
+    border: 2px solid #cccccc;
+    box-shadow: 0 0 20px #999999;
+  }
+  .role-card img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 10px;
+  }
+</style>
+
+</style>
 </head>
 <body>
   <div class="container" id="joinContainer">
@@ -156,6 +194,16 @@
             document.getElementById("roleContainer").style.display = "block";
             document.getElementById("playerRole").innerText = player.role;
             document.getElementById("roleImage").src = getRoleImage(player.role);
+
+            const roleClass = {
+              "مافيا": "role-mafia",
+              "مواطن": "role-citizen",
+              "دكتور": "role-doctor",
+              "شايب": "role-oldman"
+            };
+            const roleCard = document.querySelector('.role-card');
+            roleCard.className = 'role-card ' + (roleClass[player.role] || '');
+
             document.getElementById("joinContainer").style.display = "none";
 
             const waitingMsg = document.getElementById("waitingMessage");
